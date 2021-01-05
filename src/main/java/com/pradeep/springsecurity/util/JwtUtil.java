@@ -33,7 +33,7 @@ public class JwtUtil {
                 .setSubject(username)
                 .claim("authorities", authorities)
                 .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + jwtConfig.getAccessTokenValidity() * 1000))
+                .setExpiration(new Date(System.currentTimeMillis() + jwtConfig.getAccessTokenValidity()))
                 .signWith(jwtConfig.secretKey())
                 .compact();
     }
@@ -58,7 +58,7 @@ public class JwtUtil {
                     .parseClaimsJws(token)
                     .getBody();
         }catch (JwtException jwtException){
-            throw new BadCredentialsException("Could not parse token -" + token);
+            throw new BadCredentialsException("Could not parse token -" + token + " : because -" + jwtException.getMessage());
         }
     }
 

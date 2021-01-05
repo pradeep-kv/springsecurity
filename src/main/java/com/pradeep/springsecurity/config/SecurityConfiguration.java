@@ -3,7 +3,6 @@ package com.pradeep.springsecurity.config;
 import com.pradeep.springsecurity.filter.EmailConfigFilter;
 import com.pradeep.springsecurity.filter.JwtTokenValidationFilter;
 import com.pradeep.springsecurity.handler.CustomAuthenticationSuccessHandler;
-import com.pradeep.springsecurity.service.CustomUserDetailsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -13,13 +12,15 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
 @EnableWebSecurity
 public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
-//    @Autowired
-//    EmailConfigFilter emailConfigFilter;
+
+    @Autowired
+    UserDetailsService userDetailsService;
 
     CustomAuthenticationSuccessHandler customAuthenticationSuccessHandler;
 
@@ -58,8 +59,8 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     @Bean
     public DaoAuthenticationProvider authProvider() {
         DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
-        authProvider.setUserDetailsService(CustomUserDetailsService.getUserDetailsService());
-        authProvider.setPasswordEncoder(CustomPasswordEncoder.getPasswordEncoder());
+        authProvider.setUserDetailsService(userDetailsService);
+        authProvider.setPasswordEncoder(CustomPasswordEncoder.getInstance().getDelegatingPasswordEncoder());
         return authProvider;
     }
 }

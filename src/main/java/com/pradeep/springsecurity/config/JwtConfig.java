@@ -11,6 +11,8 @@ public class JwtConfig {
     @Value("${jwt.access-token-validity-seconds}")
     private Integer accessTokenValidity;
 
+    private Integer milliSecondToSecondMultiplier = 1000;
+
     @Value("${jwt.privatekey}")
     private String privateKey;
 
@@ -27,7 +29,7 @@ public class JwtConfig {
     private String authorizationHeader;
 
     public int getAccessTokenValidity() {
-        return accessTokenValidity;
+        return accessTokenValidity * milliSecondToSecondMultiplier;
     }
 
 //    public void setAccessTokenValidity(int accessTokenValidity) {
@@ -40,7 +42,7 @@ public class JwtConfig {
 
 //    public void setPrivateKey(String privateKey) {
 //        this.privateKey = privateKey;
-//    }
+//    }Thursday
 
     //    public void setPublicKey(String publicKey) {
 //        this.publicKey = publicKey;

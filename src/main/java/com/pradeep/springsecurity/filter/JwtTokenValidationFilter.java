@@ -12,9 +12,11 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.Arrays;
 
 @Component
 public class JwtTokenValidationFilter extends OncePerRequestFilter {
@@ -30,10 +32,14 @@ public class JwtTokenValidationFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, FilterChain filterChain) throws ServletException, IOException {
-        String requestHeader = httpServletRequest.getHeader(jwtConfig.getAuthorizationHeader());
-        if(Strings.isNotBlank(requestHeader) && Strings.isNotEmpty(requestHeader)
-                && requestHeader.startsWith(jwtConfig.getTokenPrefix())){
-            String token = requestHeader.replace(jwtConfig.getTokenPrefix(), "");
+//        String requestHeader = httpServletRequest.getHeader(jwtConfig.getAuthorizationHeader());
+//        After careful consideration, It was decided to keep JWT Token in Cookie
+//        Below is the reference article about keeping JWT Token in Header vs Cookie
+//        https://stormpath.com/blog/where-to-store-your-jwts-cookies-vs-html5-web-storage
+        String token = getJwtTokenFromRequestCookie(httpServletRequest);
+        if(Strings.isNotBlank(token) && Strings.isNotEmpty(token)
+                && token.startsWith(jwtConfig.getTokenPrefix())){
+            token = token.replace(jwtConfig.getTokenPrefix(), "");
 
             try{
                 Authentication authentication = jwtUtil.verifyToken(token);
@@ -44,9 +50,18 @@ public class JwtTokenValidationFilter extends OncePerRequestFilter {
                 }
             }catch (Exception e){
                 System.out.println(e.getMessage());
+                throw new BadCredentialsException(e.getMessage());
             }
         }
 
         filterChain.doFilter(httpServletRequest, httpServletResponse);
+    }
+
+    private String getJwtTokenFromRequestCookie(HttpServletRequest httpServletRequest){
+        return Arrays.stream(httpServletRequest.getCookies())
+                .filter(c -> c.getName().equals(jwtConfig.getAuthorizationHeader()))
+                .findFirst()
+                .map(Cookie::getValue)
+                .orElse(null);
     }
 }
